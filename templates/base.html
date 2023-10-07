@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Your App{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<div class="navbar">
+    <a href="{% url 'image_list' %}">Image List</a>
+    <a href="{% url 'upload_image' %}">Upload Image</a>
+    <a href="{% url 'user_profile' %}">User Profile</a>
+</div>
+
+<div class="content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
