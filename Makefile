@@ -2,12 +2,14 @@
 
 # Run the development server
 run:
-	cd pyIMAGE && python manage.py runserver 8001
+	cd pyIMAGE && python manage.py runserver 
 
 # Run database migrations
 migrate:
 	cd pyIMAGE && python manage.py makemigrations 
+	cd pyIMAGE && python manage.py migrate
 
+	 
 # Collect static files
 collectstatic:
 	cd pyIMAGE && python manage.py collectstatic --noinput

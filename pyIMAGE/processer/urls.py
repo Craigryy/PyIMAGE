@@ -1,12 +1,12 @@
-from django.urls import path
+from django.contrib import admin
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
 from . import views
-
+ 
 urlpatterns = [
-    path('', views.image_list, name='image_list'),
-    path('upload/', views.upload_image, name='upload_image'),
-    path('edit/<int:image_id>/', views.edit_image, name='edit_image'),
-    path('apply_effect/<int:image_id>/', views.apply_effect, name='apply_effect'),
-    path('profile/', views.user_profile, name='user_profile'),
+  path('admin/', admin.site.urls),         
+  path("login/", views.login, name="login"),
+  path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+  path('social-auth/', include('social_django.urls', namespace="social")),
+  path("", views.home, name="home"),
 ]
-
-# Add other URL patterns for the app as needed
