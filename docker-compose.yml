@@ -1,0 +1,73 @@
+version: '3'
+
+volumes:
+  postgres_data: {}
+  postgres_backup: {}
+
+services:
+  database:
+    restart: always
+    image: postgres:13-alpine
+    container_name: pyimage_db
+    environment:
+      POSTGRES_PASSWORD: FAVOUR98
+      POSTGRES_USER: craig
+      POSTGRES_DB: pyimage
+    ports:
+      - "8092:5432" # to avoid local ports from clashing
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backup:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U script_power"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  reverse-proxy:
+    image: traefik:v2.9
+    command:
+      - --api.insecure=true
+      - --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  web:
+    restart: always
+    container_name: pyimage_web
+    user: "root:pyIMAGE"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    labels:
+      - "traefik.http.routers.web.rule=Host(`script.docker.localhost`)"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "pwd"
+      - "poetry run python pyIMAGE/manage.py makemigrations"
+      - "poetry run python pyIMAGE/manage.py migrate"
+      - "echo 'from django.contrib.auth.models import User; User.objects.filter(email=\"admin@example.com\").delete(); User.objects.create_superuser(\"devadmin\", \"admin@example.com\", \"nimda\")' | poetry run script/manage.py shell"
+      - "echo Starting Django development server.."
+      - "poetry run python pyIMAGE/manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=script.settings.dev
+      - DATABASE_URL=postgresql://craig:FAVOUR98@database:5432/pyimage
+      - DB_NAME=pyimage
+      - DB_PORT=5432
+      - DB_USER=craig
+      - DB_PASSWORD=FAVOUR98
+      - DB_HOST=database
+      - ENVIRONMENT=dev
+
+networks:
+  default:
+    name: pyIMAGE
