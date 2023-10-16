@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pyimage"
+version = "0.1.0"
+description = "an editing image app"
+authors = ["Craigryy <harriajames97@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^4.2.6"
+django-allauth = "^0.57.0"
+pillow = "^10.0.1"
+django-imagekit = "^5.0.0"
+psycopg2-binary = "^2.9.9"
+django-crispy-forms = "^2.0"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
