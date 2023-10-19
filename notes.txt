@@ -1,0 +1,46 @@
+Setup steps
+
+pip install poetry
+poetry init (only the first time)
+poetry install
+
+poetry show
+poetry env info
+
+Reference: 
+docs from imagekit from https://django-imagekit.readthedocs.io/en/latest/
+
+cd script && python manage.py migrate
+python manage.py createsuperuser (pw: Favour98)
+python manage.py runserver
+
+
+# From the root directory
+export SQLITE=True
+poetry run python pyIMAGE/manage.py makemigrations
+poetry run python pyIMAGE/manage.py migrate
+poetry run python pyIMAGE/manage.py runserver
+ 
+# Using Docker
+docker-compose up
+
+# navigate to 
+script.docker.localhost
+
+
+# Makefile
+For automating simple tasks, a Makefile is provided.
+make run    #Start development server 
+make stop         : Stop the Docker containers"
+make teardown     : Stop and remove the Docker containers and associated volumes"
+make network      : View the Docker network"
+make navigate     : Navigate to script.docker.localhost"
+make start_docker : Start the Docker app"
+make build        : Build Docker containers"
+
+
+reference for self documented Makefile
+https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+
+
+
