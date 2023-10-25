@@ -1,0 +1,30 @@
+{% extends 'account/base.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <br/>
+        <div class="row">
+            <!-- Left Bar -->
+            <div class="col-md-2 leftbar">
+                {% include 'main/leftbar.html' %}
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="text-center">
+                    <h2>Home</h2>
+                    <p>Hello {{ user.first_name }}!</p>
+                    <p>Your Username: {{ user }}</p>
+
+                    {% if user.profile.profile_image %}
+                        <img src="{{ user.profile.profile_image.url }}" alt="Profile Picture">
+                    {% else %}
+                        <p>No profile picture available.</p>
+                    {% endif %}
+
+                    <a class="btn btn-dark" href="{% url 'socialaccount_connections' %}">Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
