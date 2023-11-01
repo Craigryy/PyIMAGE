@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     "debug_toolbar",
+    'django_social_share',
+    'imagekit',
 ]
 
 SITE_ID = 1
@@ -82,7 +84,8 @@ ROOT_URLCONF = 'pills.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(PROJECT_DIR, 'pillycam', 'templates')],
+        # DIRS : [[BASE_DIR]]
+        'DIRS': [os.path.join(BASE_DIR,'pillycam','templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,6 +93,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                # Add this when serving media
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
             ],
         },
     },
@@ -164,6 +171,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -172,7 +181,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-STATICFILES_DIRS = (os.path.join(PROJECT_DIR, 'pillycam','static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR,'pills', 'pillycam','static'),)
+
 
 # 107988221787-chu0ijbs8n98n68cqa1kfijrc36bbf2h.apps.googleusercontent.com
 # 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

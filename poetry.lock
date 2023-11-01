@@ -441,6 +441,17 @@ async-dramatiq = ["django-dramatiq (>=0.4.0)"]
 async-rq = ["django-rq (>=0.6.0)"]
 
 [[package]]
+name = "django-social-share"
+version = "2.3.0"
+description = "Templatetags for 'tweet this' and 'share on facebook'"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-social-share-2.3.0.tar.gz", hash = "sha256:37844f3b4f88a2008604ece7eaedd52fd5914f111f13525200ce1101b750757f"},
+    {file = "django_social_share-2.3.0-py2.py3-none-any.whl", hash = "sha256:13d0a1fbb2a90e3a6e7eb556315ececd1e93a906574a3284affbe2f43e2f7398"},
+]
+
+[[package]]
 name = "flake8"
 version = "3.9.2"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -1088,4 +1099,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f8f844dedb5cf4da954f96a4470d11e9dbffb07c46105fc95d57dd20aa37a573"
+content-hash = "8c95acd13f50bd0e2c34ad5dd762583c96fe0740b33831271d55837e72ff3824"

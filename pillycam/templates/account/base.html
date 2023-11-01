@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    {% load static %}
+    {% load imagekit %}
     <title>{% block head_title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static " css/style.css " %}"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <!-- Font Awesome CSS -->
     <script src="https://kit.fontawesome.com/178c04fcb1.js" crossorigin="anonymous"></script>
@@ -18,6 +21,16 @@
         color: white; /* White text color */
         margin-bottom:10px;
       }
+
+      footer {
+            position: fixed;
+            bottom: 0;
+            font-size: small;
+            width: 100%;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
     </style>
     {% block extra_head %}
     {% endblock %}
@@ -41,7 +54,7 @@
         </button>
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Dark offcanvas</h5>
+            <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">pyverse</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
@@ -51,7 +64,7 @@
                 <a class="nav-link text-dark" href="{% url 'account_email' %}">Change E-mail</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-dark" href="{% url 'home' %}">Home</a>
+                <a class="nav-link text-dark" href="{% url 'main:home' %}">Home</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link text-dark" href="{% url 'account_logout' %}">Sign Out</a>
@@ -79,6 +92,18 @@
     {% endblock %}
     {% block extra_body %}
     {% endblock %}
+
+    <footer>
+      <div id="footer-content"></div>
+  </footer>
+  <script>
+    // JavaScript to set the current year dynamically in the footer
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentYear = new Date().getFullYear();
+        const footerContent = document.getElementById("footer-content");
+        footerContent.innerHTML = `&copy; ${currentYear} Py-verse. All rights reserved.`;
+    });
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
   </body>

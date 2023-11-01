@@ -1,0 +1,82 @@
+{% extends "account/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="column">
+        {% include "main/navbar.html" %}
+    </div>
+    
+    <div class="dashboard-container">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <input type="file" name="image" id="imageInput" style="display: none;">
+            <label for="imageInput" class="upload-button">
+                <i class="fas fa-upload" style="margin-right: 5px;"></i> Upload Image
+            </label>
+        </form>
+        <br/>
+        <br/>
+
+        <!-- Uploaded Images -->
+        <div class="uploaded-images" style="margin-top: 20px; display: flex; justify-content: center; flex-wrap: wrap;">
+            {% for image in images %}
+                <div class="image-item" style="margin: 10px;">
+                    <img src="{{ image.image.url }}" alt="Uploaded Image" style="max-width: 200px;">
+                    <div style="margin-top: 5px;">
+                      
+                        <button href="{% url 'main:delete' image.id %}" class="delete-link" style="padding: 10px 20px; font-size: 16px; border-radius: 5px; border: 2px solid #dc3545; background-color: #dc3545; color: white;">
+                            <i class="fas fa-trash-alt" style="margin-right: 5px;"></i> Delete
+                        </button>
+                        <button id="shareBtn" data-image="{{ image.image.url }}" style="padding: 10px 20px; font-size: 16px; border-radius: 5px; border: 2px solid #17a2b8; background-color: white; color: #17a2b8; margin-right: 10px;">
+                            <i class="fas fa-share" style="margin-right: 5px;"></i> Share
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; justify-content: center; margin-top: 20px;">
+            <button id="editBtn" style="padding: 10px 20px; font-size: 16px; border-radius: 5px; border: 2px solid #17a2b8; background-color: white; color: #17a2b8; margin-right: 10px;">
+                <i class="fas fa-edit" style="margin-right: 5px;"></i> Edit
+            </button>
+
+            <!-- Effects Buttons (Initially Hidden) -->
+            <div id="effectsContainer" style="display: none;">
+                <div class="effect-buttons" style="margin-top: 20px; display: flex; justify-content: center;">
+                    <br/>
+                    {% for effect in effects %}
+                        <button class="effect-btn" data-effect="{{ effect }}">
+                            <i class="fas fa-magic" style="margin-right: 5px;"></i> Apply {{ effect }} Effect
+                        </button>
+                    {% endfor %}
+                </div> 
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.upload-button').addEventListener('click', function() {
+            document.getElementById('imageInput').click();
+        });
+
+        document.querySelectorAll('.share-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const imageUrl = this.getAttribute('data-image');
+                // Perform an action to share the image (call backend or JavaScript function)
+                // Update the UI or perform necessary actions
+            });
+        });
+
+        // Toggle display of effect buttons
+        document.getElementById('editBtn').addEventListener('click', function() {
+            const effectsContainer = document.getElementById('effectsContainer');
+            if (effectsContainer.style.display === 'none') {
+                effectsContainer.style.display = 'block';
+            } else {
+                effectsContainer.style.display = 'none';
+            }
+        });
+
+        // Rest of your JavaScript for other functionalities...
+    </script>
+{% endblock %}
