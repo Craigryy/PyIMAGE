@@ -1,70 +1,42 @@
-from PIL import ImageOps, ImageEnhance, ImageChops, ImageFilter
+import os
+from PIL import Image, ImageFilter, ImageEnhance
+
+def make_linear_ramp(white):
+    ramp = []
+    r, g, b = white
+    for i in range(256):
+        ramp.extend((int(r * i / 255), int(g * i / 255), int(b * i / 255)))
+    return ramp
+
+class applyEffects:
+    def __init__(self, pil_image):
+        self.pil_image = pil_image
+
+    def apply_effect(self, effect):
+        img = Image.open(self.pil_image)
+        edit_path = f"{os.path.splitext(self.pil_image)[0]}_edited.png"
+
+        effects_map = {
+            'brightness': lambda img: ImageEnhance.Brightness(img).enhance(1.8),
+            'grayscale': lambda img: img.convert('L'),
+            'blackwhite': lambda img: img.convert('1'),
+            'sepia': lambda img: img.convert('L').putpalette(make_linear_ramp((255, 240, 192))),
+            'contrast': lambda img: ImageEnhance.Contrast(img).enhance(2.0),
+            'blur': lambda img: img.filter(ImageFilter.BLUR),
+            'findedges': lambda img: img.filter(ImageFilter.FIND_EDGES),
+            'bigenhance': lambda img: img.filter(ImageFilter.EDGE_ENHANCE_MORE),
+            'enhance': lambda img: img.filter(ImageFilter.EDGE_ENHANCE),
+            'smooth': lambda img: img.filter(ImageFilter.SMOOTH_MORE),
+            'emboss': lambda img: img.filter(ImageFilter.EMBOSS),
+            'contour': lambda img: img.filter(ImageFilter.CONTOUR),
+            'sharpen': lambda img: img.filter(ImageFilter.SHARPEN),
+            # Add more effects as needed
+        }
+
+        if effect in effects_map:
+            img = effects_map[effect](img)
+            img.save(edit_path, format='PNG', quality=100)
+        else:
+            print(f"Effect '{effect}' not supported.")
 
 
-def black_white(image):
-    """Change image to greyscale."""
-    return ImageOps.grayscale(image)
-
-
-def glassial_blur(image, amount=1):
-    """Blur image."""
-    im = image.filter(ImageFilter.GaussianBlur(radius=amount))
-    return im
-
-
-def desaturate(image, amount=.9):
-    """Reduce vibrance."""
-    enhanced = ImageEnhance.Color(image)
-    return enhanced.enhance(amount)
-
-
-def saturate(image, amount=1.1):
-    """Increase vibrance."""
-    enhanced = ImageEnhance.Color(image)
-    return enhanced.enhance(amount)
-
-
-def sharpness(image, amount=1.1):
-    """Shapen edges of an image."""
-    enhanced = ImageEnhance.Sharpness(image)
-    return enhanced.enhance(amount)
-
-
-def contrast(image, amount=1.1):
-    """Adjust ."""
-    enhanced = ImageEnhance.Contrast(image)
-    return enhanced.enhance(amount)
-
-
-def invert(image):
-    """Invert the image."""
-    return ImageChops.invert(image)
-
-
-def flip(image):
-    """Flip image."""
-    return ImageOps.flip(image)
-
-
-def mirror(image):
-    """Mirrior image horizontally."""
-    return ImageOps.mirror(image)
-
-
-def rotate(image):
-    """Rotate image by 25 degrees."""
-    return image.rotate(25)
-
-# Create list  to handle respective effects
-effect = {
-    "greyscale": black_white,
-    "blur": glassial_blur,
-    "desaturate": desaturate,
-    "saturate": saturate,
-    "sharpness": sharpness,
-    "contrast": contrast,
-    "invert": invert,
-    "flip": flip,
-    "mirror": mirror,
-    "rotate": rotate,
-}

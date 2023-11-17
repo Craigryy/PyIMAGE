@@ -1,0 +1,25 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <h2>Your Photo Board</h2>
+
+        {% if images %}
+            <div class="photo-board">
+                {% for image in images %}
+                    <div class="photo">
+                        <img src="{{ image.image.url }}" alt="Photo">
+                        <p>Uploaded on: {{ image.created_on }}</p>
+                        <p>{{ image.title }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No photos uploaded yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
+{% endblock %}

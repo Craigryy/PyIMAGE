@@ -181,7 +181,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR,'pills', 'pillycam','static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR,'jamesss','pillycam','static'),)
 
 
 # 107988221787-chu0ijbs8n98n68cqa1kfijrc36bbf2h.apps.googleusercontent.com

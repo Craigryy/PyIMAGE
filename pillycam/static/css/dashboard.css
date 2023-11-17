@@ -1,36 +1,33 @@
-.image-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 columns */
-    gap: 10px; /* Adjust spacing between images */
-    background-color: #f4f4f4; /* Light background color */
-    padding: 20px; /* Add padding for spacing */
-    min-height: 300px; /* Set a minimum height for the grid */
-    text-align: center; /* Center text when no images are present */
+
+body {
+    font-family: Arial, sans-serif;
 }
 
-.grid-item img {
-    width: 100%; /* Ensure images fill their grid item */
-    height: auto;
-    display: block;
+.container {
+    max-width: 100%;
+    margin: 20px -100px 20px 200px; /* top right bottom left */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
-.no-image-msg {
+
+.photo-board {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;s
     justify-content: center;
-    height: 100%; /* Center the text vertically */
-    font-size: 20px;
-    color: #888; /* Color for the text message */
-}
-.column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh; /* Optional: adjust the height based on your layout */
 }
 
-.dashboard-container {
-    /* Additional styling for the dashboard container, if needed */
-    margin-top: 20px; /* Adjust spacing as needed */
+.photo {
+    margin: 10px;
+}
+
+.photo img {
+    max-width: 100%;
+    border-radius: 5px;
+}
+
+p {
+    margin-top: 5px;
 }

@@ -1,70 +1,71 @@
+<!-- Your Template -->
 {% extends 'account/base.html' %}
 {% load static %}
 
 {% block content %}
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            display: flex;
-        }
-        .sidebar {
-            width: 250px; /* Set the width of the sidebar */
-            flex: 0 0 auto; /* Maintain sidebar's width */
-            height: 100vh; /* Full height of the viewport */
-            background-color: #333; /* Sidebar background color */
-            color: #fff; /* Text color */
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            color: #fff;
-            text-decoration: none;
-        }
-        .navbar-brand img {
-            margin-right: 10px;
-            width: 32px;
-        }
-        .sidebar a {
-            color: #fff;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .sidebar a:hover {
-            text-decoration: underline;
-        }
-        .img-circle {
-            border-radius: 50%;
-            width: 50px; /* Adjust the size as needed */
-            height: 50px; /* Adjust the size as needed */
-            margin-bottom: 10px;
-        }
-        .user-info span {
-            font-size: 18px;
-        }
-    </style>
-    <nav class="navbar navbar-dark bg-dark" role="navigation" style="margin-bottom: 0">
-        <div class="sidebar">
-            <a class="navbar-brand" href="#">
-                <img src="{% static 'images/logo.png' %}" alt=""> Py-verse
-            </a>
-            {% if user.is_authenticated %}
-                <img class="img-circle" src="{{ profile_image_url }}"/>
-                <div class="user-info">
-                    {% load account %}
-                    <span>{{ request.user.get_full_name }}</span>
-                    <br/>
-                    <br/>
-                    <a class="btn btn-dark" href="{% url 'socialaccount_connections' %}">Settings</a>
-                </div>
-            {% endif %}
-        </div>
-    </nav>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+    body {
+        display: flex;
+    }
+    .sidebar {
+        width: 250px; /* Set the width of the sidebar */
+        flex: 0 0 auto; /* Maintain sidebar's width */
+        height: 100vh; /* Full height of the viewport */
+        background-color: #333; /* Sidebar background color */
+        color: #fff; /* Text color */
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        color: #fff;
+        text-decoration: none;
+    }
+    .navbar-brand img {
+        margin-right: 10px;
+        width: 32px;
+    }
+    .sidebar a {
+        color: #fff;
+        text-decoration: none;
+        display: block;
+        margin-bottom: 10px;
+    }
+    .sidebar a:hover {
+        text-decoration: underline;
+    }
+    .img-circle {
+        border-radius: 50%;
+        width: 50px; /* Adjust the size as needed */
+        height: 50px; /* Adjust the size as needed */
+        margin-bottom: 10px;
+    }
+    .user-info span {
+        font-size: 18px;
+    }
+</style>
+<br/>
+<br/>
+<nav class="navbar navbar-dark bg-dark" role="navigation" style="margin-bottom: 0">
+    <div class="sidebar">
+        {% if user.is_authenticated %}
+        
+            <div class="user-info">
+                {% load account %}
+                <img class="img-circle" src="{{ request.user.profile.get_profile_image_url }}"/>
+                <span>{{ request.user.get_full_name }}</span>
+                <br/>
+                <br/>
+                <a class="btn btn-dark" href="{% url 'socialaccount_connections' %}">Settings</a>
+            </div>
+        {% endif %}
+    </div>
+</nav>
 {% endblock %}
