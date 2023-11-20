@@ -47,12 +47,18 @@
         <h2>Processed Image</h2>
         <img id="processedImage" alt="Processed Image">
     </div>
-
+    
     <!-- Delete buttons for the uploaded images -->
     {% for image in images %}
         <button class="delete-button" data-image-id="{{ image.id }}">Delete Image {{ image.id }}</button>
     {% endfor %}
+
+    <!-- Button to open the display modal -->
+    <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
 </div>
+
+<!-- Include display.html content -->
+{% include "main/display_modal.html" %}
 
 <!-- Include the Facebook SDK script -->
 <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v10.0&appId=YOUR_APP_ID&autoLogAppEvents=1" nonce="YOUR_RANDOM_NONCE"></script>
@@ -63,7 +69,7 @@
         var selectedEffect = $("select[name='effect']").val();
 
         $.get({
-            url: "{% url 'main:image' %}",  // Use the correct URL name
+            url: "{% url 'main:apply_effect' %}",  // Use the correct URL name
             data: {
                 effect: selectedEffect,
                 image_path: $("#uploadedImage").attr("src")
@@ -100,6 +106,11 @@
         });
     });
 
+     // Function to open the display modal
+     $("#openDisplayModal").click(function () {
+        $("#displayModal").modal("show");
+    })
+
     // Function to delete the image
     $(".delete-button").click(function () {
         var imageId = $(this).data("image-id");
@@ -119,3 +130,4 @@
 </script>
 
 {% endblock %}
+

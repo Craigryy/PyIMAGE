@@ -25,33 +25,29 @@ class LoginRequiredMixin(object):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 
-class EffectView(TemplateView):
-    template_name = 'main/index.html'
-    
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['effect'] = self.request.GET.get('effect')
-        context['image_path'] = self.request.GET.get('image_path')
-        return context
-
+class EffectView(View):
     def get(self, request, *args, **kwargs):
-        effect = self.request.GET.get('effect')
-        image_path = self.request.GET.get('image_path')
+        effect = request.GET.get('effect')
+        image_path = request.GET.get('image_path')
 
         if effect and image_path:
-            applier = ApplyEffects(image_path)
+            applier = applyEffects(image_path)
             processed_image = applier.apply_effect(effect)
 
             if processed_image:
                 # Save the processed image in the desired location
                 edited_path = f"{os.path.splitext(image_path)[0]}_{effect}_edited.png"
                 processed_image.save(edited_path, format='PNG', quality=100)
-                
-                # Pass the edited image path to the template
-                self.kwargs['edited_image_path'] = edited_path
 
-        return super().get(request, *args, **kwargs)
+                # Return the edited image as an HTTP response
+                with open(edited_path, 'rb') as f:
+                    response = HttpResponse(f.read(), content_type='image/png')
+                    response['Content-Disposition'] = f'inline; filename={os.path.basename(edited_path)}'
+                    return response
+
+        # Return a 404 response if no image is found or processing fails
+        return HttpResponseNotFound("Image not found")
+
 
 class HomeView(LoginRequiredMixin, TemplateView):
     login_url = 'account_login'

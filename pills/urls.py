@@ -25,3 +25,15 @@ urlpatterns = urlpatterns + [
     path("__debug__/", include("debug_toolbar.urls")),
 
 ]
+
+if not settings.DEBUG:
+    urlpatterns += patterns(
+        '',
+        url(r'^media/(?P<path>.*)$',
+            'django.views.static.serve', {
+                'document_root': settings.MEDIA_ROOT,
+            })
+    )
+
+handler404 = 'pillycam.views.custom_404'
+handler500 = 'pillycam.views.custom_500'

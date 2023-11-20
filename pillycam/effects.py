@@ -38,5 +38,3 @@ class applyEffects:
             img.save(edit_path, format='PNG', quality=100)
         else:
             print(f"Effect '{effect}' not supported.")
-
-
