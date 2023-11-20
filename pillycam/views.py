@@ -25,6 +25,25 @@ class LoginRequiredMixin(object):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 
+class PillowImageView(TemplateView):
+    ''' Class defined to apply effect to image.'''
+
+    def get(self, request, *args, **kwargs):
+        pilimage = request.GET.get('image')
+
+        if not pilimage:
+            return HttpResponse("Image parameter is missing.", status=400)
+
+        effect = request.GET.get('effect')
+
+        try:
+            image_effects = applyEffects(pilimage)
+            edited_image_path = image_effects.apply_effect(effect)
+            rel_path = os.path.relpath(edited_image_path, settings.BASE_DIR)
+            return HttpResponse(rel_path, content_type="text/plain")
+        except Exception as e:
+            return HttpResponse(f"Error applying effect: {str(e)}", status=500)
+   
 class EffectView(View):
     def get(self, request, *args, **kwargs):
         effect = request.GET.get('effect')

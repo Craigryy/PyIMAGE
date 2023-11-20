@@ -14,8 +14,10 @@ class applyEffects:
 
     def apply_effect(self, effect):
         img = Image.open(self.pil_image)
-        edit_path = f"{os.path.splitext(self.pil_image)[0]}_edited.png"
+        base_path, ext = os.path.splitext(self.pil_image)
+        edited_image_path = f"{base_path}_edited{ext}"
 
+        
         effects_map = {
             'brightness': lambda img: ImageEnhance.Brightness(img).enhance(1.8),
             'grayscale': lambda img: img.convert('L'),
@@ -32,9 +34,9 @@ class applyEffects:
             'sharpen': lambda img: img.filter(ImageFilter.SHARPEN),
             # Add more effects as needed
         }
-
         if effect in effects_map:
             img = effects_map[effect](img)
-            img.save(edit_path, format='PNG', quality=100)
+            img.save(edited_image_path, format='PNG', quality=100)
+            return edited_image_path
         else:
-            print(f"Effect '{effect}' not supported.")
+            raise ValueError(f"Effect '{effect}' not supported.")
