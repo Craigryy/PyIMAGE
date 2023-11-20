@@ -9,7 +9,7 @@
             <div class="photo-board">
                 {% for image in images %}
                     <div class="photo">
-                        <img src="{{ image.image.url }}" alt="Photo">
+                        <img src="{{ image.thumbnail.url }}" alt="Thumbnail">
                         <p>Uploaded on: {{ image.created_on }}</p>
                         <p>{{ image.title }}</p>
                     </div>
@@ -19,7 +19,6 @@
             <p>No photos uploaded yet.</p>
         {% endif %}
     </div>
-
-    <!-- Link to your CSS file -->
+    <!-- Link to CSS file -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
 {% endblock %}

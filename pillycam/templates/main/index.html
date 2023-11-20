@@ -8,148 +8,114 @@
 </div>
 
 <div class="dashboard-container">
-    {% include "main/dashboard.html" %}
-
     <!-- Include your board content here -->
     {% include "main/board.html" %}
     <br/>
     <br/>
-    <div class="main-app-area" id="main">
-        <div class="row">
-            <div class="col-md-9">
-                <div class="pix row set" id="pixedit">
-                    <div class="frame" id="frameid">
-                        <img class="flex img-responsive" id="avatar" src="">
-                        <h3 id="show">Click on Image to edit..</h3>
-                    </div>
+    
+    <h1>Image Effects</h1>
 
-                    <div class="row" id="hide">
-                        <div class="col-md-12">
-                            <button class="ui facebook button share" id="fbk">
-                                <i class="facebook icon"></i>
-                                Facebook share
-                            </button>
-                            <button type="button" class="ui button save space" id="sp">Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="row">
-                    <form method="post" enctype="multipart/form-data" id="uploadForm">
-                        {% csrf_token %}
-                        <input type="file" name="image" id="imageInput" style="display: none;">
-                        <label for="imageInput" class="upload-button">
-                            <i class="fas fa-upload" style="margin-right: 5px;"></i> Upload Image
-                        </label>
-                        <button type="submit" class="ui black button">Apply Effects</button>
-                    </form>
-                </div>
+    <!-- Form for image upload -->
+    <form id="uploadForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="image" accept="image/*" required>
+        <select name="effect">
+            <option value="brightness">Brightness</option>
+            <option value="grayscale">Grayscale</option>
+            <option value="blackwhite">Black & White</option>
+            <option value="sepia">Sepia</option>
+            <option value="contrast">Contrast</option>
+            <option value="blur">Blur</option>
+            <option value="findedges">Find Edges</option>
+            <option value="bigenhance">Edge Enhance (More)</option>
+            <option value="enhance">Edge Enhance</option>
+            <option value="smooth">Smooth (More)</option>
+            <option value="emboss">Emboss</option>
+            <option value="contour">Contour</option>
+            <option value="sharpen">Sharpen</option>
+            <!-- Add more effect options as needed -->
+        </select>
+        <button type="button" id="applyEffect">Apply Effect</button>
+        <button type="submit">Upload and Save</button>
+    </form>
 
-                <div class="outer flex row">  
-                    <div class="effects move">
-                        <a href="#" class="#" id="reset" data-src="reset">
-                            <button class="ui button">Reset</button>
-                        </a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="brightness">
-                            <button class="ui button nothing">Brightness</button>
-                        </a>
-                    </div>      <div class="effects move">
-                        <a href="#" class="setup" data-effect="brightness">
-                        <button class="ui button nothing">Brightness</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="grayscale">
-                        <button class="ui button nothing">Grayscale</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="blur">
-                        <button class="ui button nothing">Blur</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="findedges">
-                        <button class="ui button nothing">FindEdges</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="blackwhite">
-                        <button class="ui button nothing">Black-White</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="sepia">
-                        <button class="ui button nothing">Sepia</button></a>
-                    </div>
-    
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="contrast">
-                        <button class="ui button nothing">Contrast</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="bigenhance">
-                        <button class="ui button nothing">Bigenhance</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="enhance">
-                        <button class="ui button nothing">Enhance</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="smooth">
-                        <button class="ui button nothing">Smooth</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="emboss">
-                        <button class="ui button nothing">Emboss</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="contour">
-                        <button class="ui button nothing">Contour</button></a>
-                    </div>
-    
-                    <div class="effects move">
-                        <a href="#" class="setup" data-effect="sharpen">
-                        <button class="ui button nothing">Sharpen</button></a>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Display the uploaded and processed image -->
+    <div id="imageContainer">
+        <!-- <h2>Uploaded Image</h2>
+        <img id="uploadedImage" alt="Uploaded Image">
+         -->
+        <h2>Processed Image</h2>
+        <img id="processedImage" alt="Processed Image">
     </div>
 
-    {% include "main/upload_modal.html" %}
-    {% include "main/delete_modal.html" %}
+    <!-- Delete buttons for the uploaded images -->
+    {% for image in images %}
+        <button class="delete-button" data-image-id="{{ image.id }}">Delete Image {{ image.id }}</button>
+    {% endfor %}
 </div>
 
 <!-- Include the Facebook SDK script -->
 <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v10.0&appId=YOUR_APP_ID&autoLogAppEvents=1" nonce="YOUR_RANDOM_NONCE"></script>
 
 <script>
-    // Function to handle image input click
-    document.querySelector('.upload-button').addEventListener('click', function() {
-        document.getElementById('imageInput').click();
+    // Function to apply image effect
+    $("#applyEffect").click(function () {
+        var selectedEffect = $("select[name='effect']").val();
+
+        $.get({
+            url: "{% url 'main:image' %}",  // Use the correct URL name
+            data: {
+                effect: selectedEffect,
+                image_path: $("#uploadedImage").attr("src")
+            },
+            success: function (data) {
+                // Display the processed image
+                $("#processedImage").attr("src", data);
+            },
+            error: function () {
+                alert("Error applying effect.");
+            }
+        });
     });
 
-    // Function to handle Facebook share
-    document.getElementById('fbk').addEventListener('click', function() {
-        // Use Facebook SDK to share
-        FB.ui({
-            method: 'share',
-            href: 'https://your-website.com',  // Replace with your website URL
-        }, function(response){});
+    // Function to upload and save the image
+    $("#uploadForm").submit(function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: "{% url 'main:home' %}",  // Use the correct URL name
+            type: "post",
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                // Display the uploaded image
+                $("#uploadedImage").attr("src", data);
+                // Clear the processed image
+                $("#processedImage").attr("src", "");
+            },
+            error: function () {
+                alert("Error uploading image.");
+            }
+        });
     });
 
-    // Organize your other JavaScript functionalities into functions...
+    // Function to delete the image
+    $(".delete-button").click(function () {
+        var imageId = $(this).data("image-id");
+
+        $.ajax({
+            url: "{% url 'main:delete' id=0 %}".replace('0', imageId),  // Use the correct URL name
+            type: "get",
+            success: function () {
+                // Refresh the page or update the UI as needed
+                location.reload();
+            },
+            error: function () {
+                alert("Error deleting image.");
+            }
+        });
+    });
 </script>
 
 {% endblock %}

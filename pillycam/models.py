@@ -1,4 +1,3 @@
-# models.py
 import os
 import hashlib
 import requests
@@ -140,5 +139,5 @@ class UserProfile(models.Model):
 
                 if fb_response.status_code == 200:
                     user.profile.avatar_url = fb_response.url
-
+                    
         user.profile.save()
