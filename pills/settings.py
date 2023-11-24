@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from .logging import LOGGING
-
+import socket  
 
 SQLITE = True
 
@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['localhost']
 INTERNAL_IPS = [
     '*',
 ]
+
 
 
 # Application definition
@@ -78,6 +79,11 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1"]
+
+# Database
 
 ROOT_URLCONF = 'pills.urls'
 

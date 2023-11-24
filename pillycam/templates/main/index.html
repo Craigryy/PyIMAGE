@@ -2,23 +2,39 @@
 {% load static %}
 
 {% block content %}
-
 <div class="column">
     {% include "main/navbar.html" %}
 </div>
 
 <div class="dashboard-container">
-    <!-- Include your board content here -->
-    {% include "main/board.html" %}
     <br/>
     <br/>
-    
+    <div class="container">
+        <br/>
+        <br/>
+        <h2>Your Photo Board</h2>
+
+        {% if images %}
+            <div class="photo-board">
+                {% for image in images %}
+                    <div class="photo">
+                        <img src="{{ image.thumbnail.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
+                        <p>Uploaded on: {{ image.created_on }}</p>
+                        <p>{{ image.title }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No photos uploaded yet.</p>
+        {% endif %}
+    </div>
+
     <h1>Image Effects</h1>
 
     <!-- Form for image upload -->
     <form id="uploadForm" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="file" name="image" accept="image/*" required>
+        <input type="file" name="image" accept="image/*" id="imageInput" required>
         <select name="effect">
             <option value="brightness">Brightness</option>
             <option value="grayscale">Grayscale</option>
@@ -33,53 +49,56 @@
             <option value="emboss">Emboss</option>
             <option value="contour">Contour</option>
             <option value="sharpen">Sharpen</option>
-            <!-- Add more effect options as needed -->
         </select>
         <button type="button" id="applyEffect">Apply Effect</button>
         <button type="submit">Upload and Save</button>
     </form>
 
-    <!-- Display the uploaded and processed image -->
     <div id="imageContainer">
-        <!-- <h2>Uploaded Image</h2>
-        <img id="uploadedImage" alt="Uploaded Image">
-         -->
         <h2>Processed Image</h2>
         <img id="processedImage" alt="Processed Image">
+        <!-- Placeholder for uploaded image (adjust according to your structure) -->
+        <img id="uploadedImage" alt="Uploaded Image">
     </div>
-    
-    <!-- Delete buttons for the uploaded images -->
-    {% for image in images %}
-        <button class="delete-button" data-image-id="{{ image.id }}">Delete Image {{ image.id }}</button>
-    {% endfor %}
 
-    <!-- Button to open the display modal -->
+    <!-- Placeholder for delete button (adjust according to your structure) -->
+    <button class="delete-button" data-image-id="1">Delete Image 1</button>
+
     <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
 </div>
 
-<!-- Include display.html content -->
 {% include "main/display_modal.html" %}
 
-<!-- Include the Facebook SDK script -->
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v10.0&appId=YOUR_APP_ID&autoLogAppEvents=1" nonce="YOUR_RANDOM_NONCE"></script>
-
 <script>
-    // Function to apply image effect
+    // Function to handle image selection
+    $(".select-image").click(function () {
+        var imagePath = $(this).data("image-path");
+        $("#processedImage").attr("src", imagePath);
+    });
+
     $("#applyEffect").click(function () {
         var selectedEffect = $("select[name='effect']").val();
+        var imageInput = document.getElementById("imageInput");
+        var processedImage = document.getElementById("processedImage");
 
-        $.get({
-            url: "{% url 'main:apply_effect' %}",  // Use the correct URL name
-            data: {
-                effect: selectedEffect,
-                image_path: $("#uploadedImage").attr("src")
-            },
+        // Create a new FormData object
+        var formData = new FormData();
+        formData.append('image', imageInput.files[0]);
+        formData.append('effect', selectedEffect);
+
+        // Make an AJAX request to apply the effect
+        $.ajax({
+            url: "{% url 'main:image' %}",
+            type: "post",
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function (data) {
-                // Display the processed image
-                $("#processedImage").attr("src", data);
+                processedImage.src = data;
             },
-            error: function () {
-                alert("Error applying effect.");
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+                alert("Error applying effect. Check the console for more information.");
             }
         });
     });
@@ -106,10 +125,10 @@
         });
     });
 
-     // Function to open the display modal
-     $("#openDisplayModal").click(function () {
+    // Function to open the display modal
+    $("#openDisplayModal").click(function () {
         $("#displayModal").modal("show");
-    })
+    });
 
     // Function to delete the image
     $(".delete-button").click(function () {
@@ -129,5 +148,7 @@
     });
 </script>
 
-{% endblock %}
+<!-- Link to CSS file -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
 
+{% endblock %}

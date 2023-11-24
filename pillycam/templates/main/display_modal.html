@@ -44,7 +44,7 @@
             var imageId = $("#imageIdInput").val();
 
             $.post({
-                url: "{% url 'main:apply_effect' %}",  // Use the correct URL name
+                url: "{% url 'main:image' %}",  // Use the correct URL name
                 data: {
                     effect: selectedEffect,
                     image_id: imageId

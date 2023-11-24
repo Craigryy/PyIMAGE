@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
 from .models import UploadImage
 from .forms import UploadImageForm
-from .effects import applyEffects
+from .effects import ApplyEffects
 from .clean import housekeeping
 from django.conf import settings
 import os
@@ -23,49 +23,6 @@ class LoginRequiredMixin(object):
     @method_decorator(login_required(login_url=LOGIN_URL))
     def dispatch(self, request, *args, **kwargs):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
-
-
-class PillowImageView(TemplateView):
-    ''' Class defined to apply effect to image.'''
-
-    def get(self, request, *args, **kwargs):
-        pilimage = request.GET.get('image')
-
-        if not pilimage:
-            return HttpResponse("Image parameter is missing.", status=400)
-
-        effect = request.GET.get('effect')
-
-        try:
-            image_effects = applyEffects(pilimage)
-            edited_image_path = image_effects.apply_effect(effect)
-            rel_path = os.path.relpath(edited_image_path, settings.BASE_DIR)
-            return HttpResponse(rel_path, content_type="text/plain")
-        except Exception as e:
-            return HttpResponse(f"Error applying effect: {str(e)}", status=500)
-   
-class EffectView(View):
-    def get(self, request, *args, **kwargs):
-        effect = request.GET.get('effect')
-        image_path = request.GET.get('image_path')
-
-        if effect and image_path:
-            applier = applyEffects(image_path)
-            processed_image = applier.apply_effect(effect)
-
-            if processed_image:
-                # Save the processed image in the desired location
-                edited_path = f"{os.path.splitext(image_path)[0]}_{effect}_edited.png"
-                processed_image.save(edited_path, format='PNG', quality=100)
-
-                # Return the edited image as an HTTP response
-                with open(edited_path, 'rb') as f:
-                    response = HttpResponse(f.read(), content_type='image/png')
-                    response['Content-Disposition'] = f'inline; filename={os.path.basename(edited_path)}'
-                    return response
-
-        # Return a 404 response if no image is found or processing fails
-        return HttpResponseNotFound("Image not found")
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -91,19 +48,37 @@ class HomeView(LoginRequiredMixin, TemplateView):
             effect = request.POST.get('effect')
             if effect:
                 image_path = new_image.image.path
-                applier = applyEffects(image_path)
+                applier = ApplyEffects(image_path)
                 applier.apply_effect(effect)
 
             return HttpResponseRedirect(reverse('main:home'))
         return HttpResponse("Error", status=403)
 
 
-BASE_DIR = settings.BASE_DIR
-MEDIA_URL = settings.MEDIA_URL
-MEDIA_ROOT = settings.MEDIA_ROOT
-
 class ImageProcessing(LoginRequiredMixin, TemplateView):
     """Process image and return the route of the processed image."""
+
+    BASE_DIR = settings.BASE_DIR
+    MEDIA_URL = settings.MEDIA_URL
+    MEDIA_ROOT = settings.MEDIA_ROOT
+
+    def apply_effect(self, image_path, effect_name):
+        try:
+            # Load the image
+            image = Image.open(os.path.join(self.BASE_DIR, image_path))
+
+            # Create an instance of ApplyEffects
+            applier = ApplyEffects(image)
+
+            # Apply the selected effect
+            processed_image_path = applier.apply_effect(effect_name)
+
+            # Return the processed image path
+            return processed_image_path
+        except Exception as e:
+            # Handle exceptions, e.g., image not found or unsupported effect
+            print(f"Error processing image: {str(e)}")
+            return None
 
     def get(self, request):
         user_id = request.user.id
@@ -118,11 +93,8 @@ class ImageProcessing(LoginRequiredMixin, TemplateView):
             file_name = os.path.basename(image_path)
             file, ext = os.path.splitext(file_name)
 
-            # Load the image
-            image = Image.open(os.path.join(BASE_DIR, image_path))
-
             # Create an absolute path for folder creation
-            output = os.path.join(BASE_DIR, MEDIA_URL, 'CACHE/temp/', str(user_id))
+            output = os.path.join(self.BASE_DIR, self.MEDIA_URL, 'CACHE/temp/', str(user_id))
             os.makedirs(output, exist_ok=True)
 
             # Set the path to save the processed image
@@ -134,23 +106,28 @@ class ImageProcessing(LoginRequiredMixin, TemplateView):
 
             temp_file = os.path.join(output, temp_file_location)
 
-            # Apply the selected effect
-            applier = applyEffects(image_path)
-            applier.apply_effect(effect_name)
+            # Apply the selected effect using the apply_effect method
+            processed_image_path = self.apply_effect(image_path, effect_name)
 
-            # Perform housekeeping
-            housekeeping(output)
+            if processed_image_path:
+                # Perform housekeeping
+                housekeeping(output)
 
-            # Save the processed image
-            applier.pil_image.save(temp_file, 'PNG')
+                # Save the processed image
+                processed_image = Image.open(processed_image_path)
+                processed_image.save(temp_file, 'PNG')
 
-            # Construct the file URL
-            file_url = os.path.join(MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
+                # Construct the file URL
+                file_url = os.path.join(self.MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
 
-            return HttpResponse(file_url)
+                return HttpResponse(file_url)
+            else:
+                # Return an error response if processing fails
+                return HttpResponseNotFound("Error processing image.")
         else:
             # Handle the case when image_path is None
             return HttpResponseNotFound("Image not found")
+
 
 class SaveProcessedImage(LoginRequiredMixin, TemplateView):
     """Save processed images on demand."""
