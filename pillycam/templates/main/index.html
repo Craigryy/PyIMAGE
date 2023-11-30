@@ -9,10 +9,18 @@
 <div class="dashboard-container">
     <br/>
     <br/>
+
     <div class="container">
         <br/>
         <br/>
         <h2>Your Photo Board</h2>
+        <div class="row">
+            {% for photo in photos %}
+                <div class="col-md-3 mb-3">
+                    <img src="{{ photo }}" class="img-thumbnail" data-toggle="modal" data-target="#previewModal">
+                </div>
+            {% endfor %}
+        </div>
 
         {% if images %}
             <div class="photo-board">
@@ -32,121 +40,35 @@
     <h1>Image Effects</h1>
 
     <!-- Form for image upload -->
-    <form id="uploadForm" enctype="multipart/form-data">
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" class='form-upload'>
         {% csrf_token %}
         <input type="file" name="image" accept="image/*" id="imageInput" required>
         <select name="effect">
-            <option value="brightness">Brightness</option>
-            <option value="grayscale">Grayscale</option>
-            <option value="blackwhite">Black & White</option>
-            <option value="sepia">Sepia</option>
-            <option value="contrast">Contrast</option>
-            <option value="blur">Blur</option>
-            <option value="findedges">Find Edges</option>
-            <option value="bigenhance">Edge Enhance (More)</option>
-            <option value="enhance">Edge Enhance</option>
-            <option value="smooth">Smooth (More)</option>
-            <option value="emboss">Emboss</option>
-            <option value="contour">Contour</option>
-            <option value="sharpen">Sharpen</option>
+            {% for effect in effects %}
+            <option value="{{ effect }}">{{ effect|title }}</option>
+            {% endfor %}
         </select>
         <button type="button" id="applyEffect">Apply Effect</button>
         <button type="submit">Upload and Save</button>
     </form>
 
-    <div id="imageContainer">
-        <h2>Processed Image</h2>
-        <img id="processedImage" alt="Processed Image">
-        <!-- Placeholder for uploaded image (adjust according to your structure) -->
-        <img id="uploadedImage" alt="Uploaded Image">
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <img src="" id="previewImage" class="img-fluid">
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Placeholder for delete button (adjust according to your structure) -->
-    <button class="delete-button" data-image-id="1">Delete Image 1</button>
+    <button class="delete-button" data-image-id="1">Delete</button>
+    <button class=""share-button" >share</button>
 
     <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
 </div>
-
-{% include "main/display_modal.html" %}
-
-<script>
-    // Function to handle image selection
-    $(".select-image").click(function () {
-        var imagePath = $(this).data("image-path");
-        $("#processedImage").attr("src", imagePath);
-    });
-
-    $("#applyEffect").click(function () {
-        var selectedEffect = $("select[name='effect']").val();
-        var imageInput = document.getElementById("imageInput");
-        var processedImage = document.getElementById("processedImage");
-
-        // Create a new FormData object
-        var formData = new FormData();
-        formData.append('image', imageInput.files[0]);
-        formData.append('effect', selectedEffect);
-
-        // Make an AJAX request to apply the effect
-        $.ajax({
-            url: "{% url 'main:image' %}",
-            type: "post",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                processedImage.src = data;
-            },
-            error: function (xhr, status, error) {
-                console.error(xhr.responseText);
-                alert("Error applying effect. Check the console for more information.");
-            }
-        });
-    });
-
-    // Function to upload and save the image
-    $("#uploadForm").submit(function (e) {
-        e.preventDefault();
-
-        $.ajax({
-            url: "{% url 'main:home' %}",  // Use the correct URL name
-            type: "post",
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                // Display the uploaded image
-                $("#uploadedImage").attr("src", data);
-                // Clear the processed image
-                $("#processedImage").attr("src", "");
-            },
-            error: function () {
-                alert("Error uploading image.");
-            }
-        });
-    });
-
-    // Function to open the display modal
-    $("#openDisplayModal").click(function () {
-        $("#displayModal").modal("show");
-    });
-
-    // Function to delete the image
-    $(".delete-button").click(function () {
-        var imageId = $(this).data("image-id");
-
-        $.ajax({
-            url: "{% url 'main:delete' id=0 %}".replace('0', imageId),  // Use the correct URL name
-            type: "get",
-            success: function () {
-                // Refresh the page or update the UI as needed
-                location.reload();
-            },
-            error: function () {
-                alert("Error deleting image.");
-            }
-        });
-    });
-</script>
 
 <!-- Link to CSS file -->
 <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">

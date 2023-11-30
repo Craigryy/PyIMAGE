@@ -25,6 +25,29 @@ class LoginRequiredMixin(object):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 
+class PillowImageView(TemplateView):
+    ''' Class defined to apply effect to image.'''
+    
+    def get(self, request, *args, **kwargs):
+        pilimage = str(request.GET.get('image'))
+        effect = request.GET.get('effect')
+
+        filepath, ext = os.path.splitext(pilimage)
+        edit_path = filepath + 'edited' + ext
+
+        image_effects = ApplyEffects(pilimage)
+        edited_path = image_effects.apply_effect(effect)
+
+        return HttpResponse(os.path.relpath(edited_path, settings.BASE_DIR),
+                            content_type="text/plain")
+
+    def get_context_data(self, **kwargs):
+        
+        context = super().get_context_data(**kwargs)
+        photos = [f for f in os.listdir(settings.MEDIA_ROOT) if f.endswith(('.jpg', '.jpeg', '.png'))]
+        context['photos'] = photos
+        return context
+
 class HomeView(LoginRequiredMixin, TemplateView):
     login_url = 'account_login'
     template_name = 'main/index.html'
@@ -34,7 +57,18 @@ class HomeView(LoginRequiredMixin, TemplateView):
         # Prepare the context for rendering the dashboard
         context['form'] = UploadImageForm()
         context['images'] = UploadImage.objects.filter(user=self.request.user)
+        context['edited_images'] = UploadImage.objects.filter(user=self.request.user, edited=True)
         context['effects'] = ['brightness', 'grayscale', 'blackwhite', 'sepia', 'contrast', 'blur', 'findedges', 'bigenhance', 'enhance', 'smooth', 'emboss', 'contour', 'sharpen']
+        
+        # Retrieve processed images
+        processed_images = []
+        for edited_image in context['edited_images']:
+            processed_image_path = edited_image.get_processed_image_path()
+            if processed_image_path:
+                processed_images.append(processed_image_path)
+
+        context['processed_images'] = processed_images
+
         return context
 
     def post(self, request, *args, **kwargs):
