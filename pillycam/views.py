@@ -15,6 +15,8 @@ import os
 from django.http import Http404
 from django.views.generic import View
 from django.views.generic.base import TemplateView
+from django.shortcuts import render
+from django.views.defaults import page_not_found, server_error
 
 LOGIN_URL = 'account_login'  
 
@@ -23,31 +25,6 @@ class LoginRequiredMixin(object):
     @method_decorator(login_required(login_url=LOGIN_URL))
     def dispatch(self, request, *args, **kwargs):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
-
-class PillowImageView(TemplateView):
-    ''' Class defined to apply effect to image.'''
-
-    def get(self, request, *args, **kwargs):
-        pilimage = str(request.GET.get('image'))
-        effect = request.GET.get('effect')
-
-        filepath, ext = os.path.splitext(pilimage)
-        edit_path = filepath + 'edited' + ext
-
-        image_effects = ApplyEffects(pilimage)
-        edited_path = image_effects.apply_effect(effect)
-
-        return HttpResponse(os.path.relpath(edited_path, settings.BASE_DIR), content_type="text/plain")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        photos = [f for f in os.listdir(settings.MEDIA_ROOT) if f.endswith(('.jpg', '.jpeg', '.png'))]
-        context['photos'] = photos
-        return context
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        return self.render_to_response(context)
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -87,83 +64,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 applier = ApplyEffects(image_path)
                 applier.apply_effect(effect)
 
-            return HttpResponseRedirect(reverse('main:home'))
+            return HttpResponseRedirect(reverse('home'))
         return HttpResponse("Error", status=403)
-
-
-class ImageProcessing(LoginRequiredMixin, TemplateView):
-    """Process image and return the route of the processed image."""
-
-    BASE_DIR = settings.BASE_DIR
-    MEDIA_URL = settings.MEDIA_URL
-    MEDIA_ROOT = settings.MEDIA_ROOT
-
-    def apply_effect(self, image_path, effect_name):
-        try:
-            # Load the image
-            image = Image.open(os.path.join(self.BASE_DIR, image_path))
-
-            # Create an instance of ApplyEffects
-            applier = ApplyEffects(image)
-
-            # Apply the selected effect
-            processed_image_path = applier.apply_effect(effect_name)
-
-            # Return the processed image path
-            return processed_image_path
-        except Exception as e:
-            # Handle exceptions, e.g., image not found or unsupported effect
-            print(f"Error processing image: {str(e)}")
-            return None
-
-    def get(self, request):
-        user_id = request.user.id
-        effect_name = request.GET.get('effect')
-        image_path = request.GET.get('path')
-
-        # Replace non-breaking space with a regular space
-        effect_name = effect_name.replace(u'\xa0', '')
-
-        if image_path:
-            # Extract the file name and extension
-            file_name = os.path.basename(image_path)
-            file, ext = os.path.splitext(file_name)
-
-            # Create an absolute path for folder creation
-            output = os.path.join(self.BASE_DIR, self.MEDIA_URL, 'CACHE/temp/', str(user_id))
-            os.makedirs(output, exist_ok=True)
-
-            # Set the path to save the processed image
-            temp_file_location = "{}{}.PNG".format(file, effect_name)
-
-            # Set route for exclusive to thumbnails
-            if request.GET.get('preview'):
-                temp_file_location = "thumbnails/{}.PNG".format(effect_name)
-
-            temp_file = os.path.join(output, temp_file_location)
-
-            # Apply the selected effect using the apply_effect method
-            processed_image_path = self.apply_effect(image_path, effect_name)
-
-            if processed_image_path:
-                # Perform housekeeping
-                housekeeping(output)
-
-                # Save the processed image
-                processed_image = Image.open(processed_image_path)
-                processed_image.save(temp_file, 'PNG')
-
-                # Construct the file URL
-                file_url = os.path.join(self.MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
-
-                return HttpResponse(file_url)
-            else:
-                # Return an error response if processing fails
-                return HttpResponseNotFound("Error processing image.")
-        else:
-            # Handle the case when image_path is None
-            return HttpResponseNotFound("Image not found")
-
 
 class SaveProcessedImage(LoginRequiredMixin, TemplateView):
     """Save processed images on demand."""
@@ -190,7 +92,7 @@ class SaveProcessedImage(LoginRequiredMixin, TemplateView):
                 UploadImage.objects.update_or_create(
                     file=media_path, owner=request.user, edited=1)
                 
-                return HttpResponseRedirect(reverse('main:home'))
+                return HttpResponseRedirect(reverse('home'))
 
         return HttpResponse("Error occurred", status=405)
 
@@ -208,6 +110,85 @@ class SaveProcessedImage(LoginRequiredMixin, TemplateView):
 
         return True
 
+
+class ImageProcessing(LoginRequiredMixin, View):
+    BASE_DIR = settings.BASE_DIR
+    MEDIA_URL = settings.MEDIA_URL
+
+    def apply_effect(self, image_path, effect_name):
+        """
+        Apply the specified image effect using the ApplyEffects class.
+
+        Parameters:
+        - image_path (str): Path to the original image.
+        - effect_name (str): Name of the image effect to apply.
+
+        Returns:
+        - str: Path to the processed image.
+        """
+        try:
+            # Load the original image
+            image = Image.open(os.path.join(self.BASE_DIR, image_path))
+
+            # Create an instance of ApplyEffects
+            applier = ApplyEffects(image)
+
+            # Apply the selected effect
+            processed_image_path = applier.apply_effect(effect_name)
+
+            return processed_image_path
+        except Exception as e:
+            print(f"Error processing image: {str(e)}")
+            return None
+
+    def get(self, request):
+        """
+        Handle GET requests for image processing.
+
+        Parameters:
+        - request (HttpRequest): Django HttpRequest object.
+
+        Returns:
+        - HttpResponse: Response containing the processed image URL or an error message.
+        """
+        user_id = request.user.id
+        effect_name = request.GET.get('effect', '').replace(u'\xa0', '')
+        image_path = request.GET.get('path')
+
+        if not image_path:
+            return HttpResponseNotFound("Image not found")
+
+        file_name = os.path.basename(image_path)
+        file, ext = os.path.splitext(file_name)
+
+        # Create a directory for storing the processed images
+        output = os.path.join(self.BASE_DIR, self.MEDIA_URL, 'CACHE/temp/', str(user_id))
+        os.makedirs(output, exist_ok=True)
+
+        # Set the path to save the processed image
+        temp_file_location = "{}{}.PNG".format(file, effect_name)
+        temp_file_location = "thumbnails/{}.PNG".format(effect_name) if request.GET.get('preview') else temp_file_location
+        temp_file = os.path.join(output, temp_file_location)
+
+        # Apply the selected effect using the apply_effect method
+        processed_image_path = self.apply_effect(image_path, effect_name)
+
+        if processed_image_path:
+            # Perform housekeeping
+            housekeeping(output)
+
+            # Save the processed image
+            processed_image = Image.open(processed_image_path)
+            processed_image.save(temp_file, 'PNG')
+
+            # Construct the file URL
+            file_url = os.path.join(self.MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
+
+            return HttpResponse(file_url)
+        else:
+            # Return an error response if processing fails
+            return HttpResponseNotFound("Error processing image.")
+            
 class DeleteImage(View, LoginRequiredMixin):
     """
     View to delete all existing photos for the logged-in user.
@@ -224,9 +205,9 @@ class DeleteImage(View, LoginRequiredMixin):
             raise Http404("No photos found for the user.")
 
 
-def custom_404(request,exception):
-    return render(request, 'main/404.html')
+def custom_page_not_found(request, exception=None):
+    return page_not_found(request, exception, template_name='main/404.html')
 
-
-def custom_500(request):
-    return render(request, 'main/500.html')
+    
+def custom_server_error(request, *args, **kwargs):
+    return server_error(request)

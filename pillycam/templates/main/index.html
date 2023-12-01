@@ -1,4 +1,4 @@
-{% extends "main/account/base.html" %}
+{% extends "account/base.html" %}
 {% load static %}
 
 {% block content %}
@@ -57,7 +57,6 @@
             <div class="photo-board">
                 {% for image in images %}
                     <div class="photo">
-                        <img src="{{ image.thumbnail.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
                         <p>Uploaded on: {{ image.created_on }}</p>
                         <p>{{ image.title }}</p>
                         <button class="delete-button" id="delete-button">Delete</button> 
