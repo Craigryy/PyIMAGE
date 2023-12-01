@@ -24,10 +24,9 @@ class LoginRequiredMixin(object):
     def dispatch(self, request, *args, **kwargs):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
 
-
 class PillowImageView(TemplateView):
     ''' Class defined to apply effect to image.'''
-    
+
     def get(self, request, *args, **kwargs):
         pilimage = str(request.GET.get('image'))
         effect = request.GET.get('effect')
@@ -38,15 +37,18 @@ class PillowImageView(TemplateView):
         image_effects = ApplyEffects(pilimage)
         edited_path = image_effects.apply_effect(effect)
 
-        return HttpResponse(os.path.relpath(edited_path, settings.BASE_DIR),
-                            content_type="text/plain")
+        return HttpResponse(os.path.relpath(edited_path, settings.BASE_DIR), content_type="text/plain")
 
     def get_context_data(self, **kwargs):
-        
         context = super().get_context_data(**kwargs)
         photos = [f for f in os.listdir(settings.MEDIA_ROOT) if f.endswith(('.jpg', '.jpeg', '.png'))]
         context['photos'] = photos
         return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        return self.render_to_response(context)
+
 
 class HomeView(LoginRequiredMixin, TemplateView):
     login_url = 'account_login'

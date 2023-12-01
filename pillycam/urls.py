@@ -1,8 +1,6 @@
 from django.urls import path,re_path
 from .views import HomeView, ImageProcessing, DeleteImage, SaveProcessedImage,PillowImageView
 
-app_name = 'main'
-
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),

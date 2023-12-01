@@ -1,0 +1,34 @@
+{% extends "main/account/base.html" %}
+{% load static %}
+
+{% block body_class %}template-homepage{% endblock %}
+
+{% block extra_css %}
+
+{% comment %}
+Delete the line below if you're just getting started and want to remove the welcome screen!
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'css/404.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+
+{% comment %}
+Delete the line below if you're just getting started and want to remove the welcome screen!
+{% endcomment %}
+{% include "snippet_header.html" %}
+
+
+<div class="pack">
+    <div class="container">
+        <h1>PAGE NOT FOUND</h1>
+        <p>Sorry, we are unable to find this page.</p>
+        <a href="/" target="_blank">BACK TO HOME </a>
+    </div>
+</div>
+
+    
+
+
+
+{% endblock content %}

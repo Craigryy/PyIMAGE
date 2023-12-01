@@ -1,0 +1,1 @@
+web: gunicorn pills.wsgi --log-file -
