@@ -155,6 +155,9 @@ def apply_effect_view(request):
                 # Get the relative path from the base directory
                 relative_path = os.path.relpath(edited_image_path, settings.BASE_DIR)
 
+                # Perform housekeeping to delete temporary files
+                housekeeping(settings.MEDIA_ROOT)
+
                 # Return the relative path in the HTTP response
                 return HttpResponse(relative_path, content_type="text/plain")
 
