@@ -1,5 +1,3 @@
-import random
-import urllib
 from PIL import Image
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -122,6 +120,7 @@ class SaveProcessedImage(LoginRequiredMixin, TemplateView):
             # Handle errors during copying
             return False
 
+
 class DeleteImage(LoginRequiredMixin, TemplateView):
     """Deletes Photos and records."""
 
@@ -131,51 +130,6 @@ class DeleteImage(LoginRequiredMixin, TemplateView):
         if image:
             return HttpResponse(image.delete())
         return HttpResponse(image.delete())
-
-
-class ImageProcessing(LoginRequiredMixin, TemplateView):
-    """Process image and return the route of the processesed image."""
-
-    def get(self, request):
-        """Process and temporarily save image."""
-        user_id = request.user.id
-        effect_name = request.GET.get('effect')  # Adjust variable name to be more descriptive
-        
-        image_path = request.GET.get('path')
-        decoded_path = urllib.parse.unquote(image_path)  # Decode the URL-encoded path
-        image = Image.open(os.path.join(BASE_DIR, decoded_path))
-
-        # Apply the effect based on the dynamically selected effect name
-        apply_effects = ApplyEffects(image)
-        edited_image = apply_effects.apply_effect(effect_name)
-
-        file_name = os.path.basename(path)
-        file, ext = os.path.splitext(file_name)
-
-        # Add a random number to make the image unique
-        rand = random.randint(0, 100)
-
-        # Create an absolute path for folder creation
-        output = os.path.join(BASE_DIR, MEDIA_URL, 'CACHE/temp/', str(user_id))
-        if not os.path.exists(output):
-            os.makedirs(output)
-
-        # Set the path to save the processed image
-        temp_file_location = "{}{}.PNG".format(rand, file)
-
-        # Set the route for exclusive thumbnails
-        if request.GET.get('preview'):
-            temp_file_location = "thumbnails/{}.PNG".format(edited_image)
-
-        temp_file = os.path.join(output, temp_file_location)
-        if not os.path.isdir(os.path.dirname(temp_file)):
-            os.makedirs(os.path.dirname(temp_file))
-
-        # Save the processed image
-        edited_image.save(temp_file, 'PNG')
-
-        file_url = os.path.join(MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
-        return HttpResponse(file_url)
 
 
 def apply_effect_view(request):

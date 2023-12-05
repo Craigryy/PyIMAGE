@@ -1,5 +1,8 @@
 import os
 from PIL import Image, ImageFilter, ImageEnhance
+from django.http import HttpResponse
+from django.views.generic import TemplateView
+from django.conf import settings
 
 def make_linear_ramp(white):
     ramp = []
@@ -14,6 +17,10 @@ class ApplyEffects:
 
     def apply_effect(self, effect):
         try:
+            # Check if the file exists
+            if not os.path.exists(self.pil_image_path):
+                raise FileNotFoundError(f"Error: File not found at path: {self.pil_image_path}")
+
             # Open the image file
             img = Image.open(self.pil_image_path)
 
@@ -50,6 +57,3 @@ class ApplyEffects:
         except Exception as e:
             print(f"Error: An unexpected error occurred: {str(e)}")
             raise e
-
-
-

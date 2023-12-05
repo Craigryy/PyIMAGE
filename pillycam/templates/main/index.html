@@ -11,7 +11,6 @@
     <div class="dashboard-container">
         <br/>
         <br/>
-
         <div class="container">
             <br/>
             <br/>
@@ -19,16 +18,14 @@
             {% if images %}
                 <div class="photo-board">
                     {% for image in images %}
-                        {% if image.get_url %}
-                            <div class="photo">
+                        {% if image.edited %}
+                            <div class="photo" data-image-id="{{ image.id }}">
                                 <img src="{{ image.thumbnail.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
                                 <p>Uploaded on: {{ image.created_on }}</p>
                                 <p>{{ image.title }}</p>
-                                {% if image.edited %}
-                                    <i class="fa fa-star-half-o retouch"></i>
-                                {% endif %}
+                                <i class="fa fa-star-half-o retouch"></i>
                                 <a href="#myModal" data-toggle="modal">
-                                    <i class="fa fa-trash pull-right delete" id="{{image.id}}"></i>
+                                    <i class="fa fa-trash pull-right delete" id="{{ image.id }}"></i>
                                 </a>
                             </div>
                         {% endif %}
@@ -38,10 +35,9 @@
                 <p>No photos uploaded yet.</p>
             {% endif %}
         </div>
-
-    
+        
         <h1>Image Effects</h1> 
-    
+
         <form id="applyEffectForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
@@ -50,38 +46,61 @@
                 <option value="brightness">Brightness</option>
                 <option value="grayscale">Grayscale</option>
                 <option value="blackwhite">Black and White</option>
-                <!-- Add more options as needed -->
+                <option value="sepia">Sepia</option>
             </select>
             <br>
-            <button type="submit">Apply Effect</button>
+            <button type="submit" class='applyEffectForm'>Apply Effect</button>
+
+            <!-- Reset Button -->
+            <button type="button" class="resetButton">Reset</button>
+
+            <!-- Save Button -->
+            <button type="button" class="saveButton">Save</button>
+
+            <!-- Upload Button -->
+            <button type="button" class="uploadButton">Upload</button>
+
+            <!-- Delete Button -->
+            <button type="button" class="deleteButton">Delete</button>
         </form>
-    
-        
-        <!-- Display the processed image -->
-        <img id="processedImage" src="#" alt="Processed Image">
-        
-        
+        <div id="result"></div>  
         <!-- Preview Button (Shows Modal) -->
         <button type="button" id="previewButton" data-toggle="modal" data-target="#previewModal">Preview</button>
-
-        <!-- Upload Button -->
-        <button type="button" id="uploadButton" >Upload</button>
-
-        <!-- Preview Modal -->
+    
+        <!-- Upload Modal -->
         <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Preview</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                     <div class="modal-body">
-                        <img src="" id="previewImage" class="img-fluid">
+                        <img id="processedImage" src="#" alt="Processed Image">
                     </div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Placeholder for delete button (adjust according to your structure) -->
         <button class="delete-button" data-image-id="1">Delete</button>
         <button class="share-button">Share</button>
 
         <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
     </div>
+
+
+    <!-- Facebook SDK Script -->
+    <script>
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5&appId=1689075798037081";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
 {% endblock %}
