@@ -18,7 +18,7 @@
             {% if images %}
                 <div class="photo-board">
                     {% for image in images %}
-                        {% if image.edited %}
+                        <!-- {% if image.edited %} -->
                             <div class="photo" data-image-id="{{ image.id }}">
                                 <img src="{{ image.thumbnail.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
                                 <p>Uploaded on: {{ image.created_on }}</p>
@@ -28,7 +28,7 @@
                                     <i class="fa fa-trash pull-right delete" id="{{ image.id }}"></i>
                                 </a>
                             </div>
-                        {% endif %}
+                        <!-- {% endif %} -->
                     {% endfor %}
                 </div>
             {% else %}
@@ -58,7 +58,8 @@
             <button type="button" class="saveButton">Save</button>
 
             <!-- Upload Button -->
-            <button type="button" class="uploadButton">Upload</button>
+            <button type="submit" class="uploadButton">Upload</button>
+
 
             <!-- Delete Button -->
             <button type="button" class="deleteButton">Delete</button>
@@ -83,10 +84,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Placeholder for delete button (adjust according to your structure) -->
-        <button class="delete-button" data-image-id="1">Delete</button>
-        <button class="share-button">Share</button>
 
         <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
     </div>

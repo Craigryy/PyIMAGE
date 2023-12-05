@@ -36,32 +36,32 @@ $(document).ready(function () {
 
     // Save Button Click Event
     $("#saveButton").click(function () {
-        // Perform the save operation here
-        // Example: $("#processedImage").attr("src", "new_saved_image_url");
+        pass
     });
-
+    
     // Upload Button Click Event
     $("#uploadButton").on("click", function () {
         // Get the form data
         var formData = new FormData($("#applyEffectForm")[0]);
-
+    
         // Make an AJAX request
         $.ajax({
             type: "POST",
-            url: "/save-effect/",  // Update this with your actual URL
+            url: "/save-effects/",  // Update this with your actual URL
             data: formData,
             contentType: false,
             processData: false,
             success: function (data) {
                 // Reload the container and add the new image
                 $(".container").load(location.href + " .container");
+                alert("yipeee");
             },
             error: function (xhr, status, error) {
                 console.error("Error:", error);
             }
         });
     });
-
+    
     // Delete Button Click Event
     $("#deleteButton").click(function () {
         // Get the image ID from the button's data-id attribute
