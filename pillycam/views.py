@@ -1,8 +1,10 @@
+import random
+import urllib
 from PIL import Image
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound,HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
@@ -17,15 +19,24 @@ from django.views.generic import View
 from django.views.generic.base import TemplateView
 from django.shortcuts import render
 from django.views.defaults import page_not_found, server_error
+from django.core.files import File
+from pills.settings import MEDIA_ROOT, MEDIA_URL, BASE_DIR
 
 LOGIN_URL = 'account_login'  
+
+def custom_page_not_found(request, exception=None):
+    return page_not_found(request, exception, template_name='main/404.html')
+
+    
+def custom_server_error(request, *args, **kwargs):
+    return server_error(request)
+
 
 class LoginRequiredMixin(object):
     """View mixin that requires the user to be authenticated."""
     @method_decorator(login_required(login_url=LOGIN_URL))
     def dispatch(self, request, *args, **kwargs):
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
-
 
 class HomeView(LoginRequiredMixin, TemplateView):
     login_url = 'account_login'
@@ -38,15 +49,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context['images'] = UploadImage.objects.filter(user=self.request.user)
         context['edited_images'] = UploadImage.objects.filter(user=self.request.user, edited=True)
         context['effects'] = ['brightness', 'grayscale', 'blackwhite', 'sepia', 'contrast', 'blur', 'findedges', 'bigenhance', 'enhance', 'smooth', 'emboss', 'contour', 'sharpen']
-        
-        # Retrieve processed images
-        processed_images = []
-        for edited_image in context['edited_images']:
-            processed_image_path = edited_image.get_processed_image_path()
-            if processed_image_path:
-                processed_images.append(processed_image_path)
-
-        context['processed_images'] = processed_images
 
         return context
 
@@ -57,157 +59,158 @@ class HomeView(LoginRequiredMixin, TemplateView):
             new_image = UploadImage(image=request.FILES['image'], user=request.user)
             new_image.save()
 
-            # Apply effect if selected
-            effect = request.POST.get('effect')
-            if effect:
-                image_path = new_image.image.path
-                applier = ApplyEffects(image_path)
-                applier.apply_effect(effect)
-
             return HttpResponseRedirect(reverse('home'))
         return HttpResponse("Error", status=403)
+
 
 class SaveProcessedImage(LoginRequiredMixin, TemplateView):
     """Save processed images on demand."""
     
+    login_required = True
     template_name = 'main/index.html'
 
     def post(self, request):
-        """Save processed image."""
-        path = request.POST.get('path')
-        
-        if path:
-            today_path = datetime.now().strftime("%Y/%m/%d")
-            filename = os.path.basename(path)
+        """Handle POST requests for saving processed images."""
+        user_id = request.user.id  # Get the user ID
+        context = {}  # Initialize context for rendering the template
 
-            # Create relative media path
-            media_path = os.path.join('profile', today_path, filename)
-
-            # Create media path to get the file
-            new_path = os.path.join(MEDIA_ROOT, media_path)
-
-            # Copy the file
-            if self.copyfiles(path, new_path):
-                # Update or create the UploadFile model
-                UploadImage.objects.update_or_create(
-                    file=media_path, owner=request.user, edited=1)
+        # Check if the form data includes the path of the processed image
+        if request.POST.get('path'):
+            try:
+                # Get the path of the processed image from the form data
+                path = request.POST.get('path')
                 
-                return HttpResponseRedirect(reverse('home'))
+                # Generate a relative path in the 'profile' folder with today's date
+                today = datetime.now()
+                today_path = today.strftime("%Y/%m/%d")
+                media_path = os.path.join('profile', today_path, os.path.basename(path))
 
-        return HttpResponse("Error occurred", status=405)
+                # Create an absolute path to save the processed image
+                new_path = os.path.join(MEDIA_ROOT, media_path)
+
+                # Check if the file has been successfully copied
+                if self.copyfiles(path, new_path):
+                    # Update or create a new entry in the UploadImage model
+                    UploadImage.objects.update_or_create(
+                        file=media_path, owner=request.user, edited=1
+                    )
+                    # Redirect to the home page on successful save
+                    return HttpResponseRedirect(reverse('main:home'))
+                else:
+                    # Handle case where the file copying failed
+                    context['error_message'] = "Error occurred while copying the file."
+            except Exception as e:
+                # Handle unexpected errors
+                context['error_message'] = f"An unexpected error occurred: {str(e)}"
+        
+        # Render the template with the context (including any error message)
+        return render(request, self.template_name, context)
 
     def copyfiles(self, source, destination):
         """Create Folder and files."""
-        os.makedirs(os.path.dirname(destination), exist_ok=True)
-
-        abs_source = os.path.join(BASE_DIR, source)
-
         try:
+            # Ensure the directory for the destination exists, create if not
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+
+            # Create an absolute source path
+            abs_source = os.path.join(BASE_DIR, source)
+
+            # Copy the file from source to destination
             shutil.copy(abs_source, destination)
+            return True  # Return True if copying is successful
         except Exception as e:
-            print(f"Error copying file: {e}")
+            # Handle errors during copying
             return False
 
-        return True
+class DeleteImage(LoginRequiredMixin, TemplateView):
+    """Deletes Photos and records."""
+
+    def get(self, request, id):
+        """Delete record and images."""
+        image = UploadImage.objects.get(id=id)
+        if image:
+            return HttpResponse(image.delete())
+        return HttpResponse(image.delete())
 
 
-class ImageProcessing(LoginRequiredMixin, View):
-    BASE_DIR = settings.BASE_DIR
-    MEDIA_URL = settings.MEDIA_URL
-
-    def apply_effect(self, image_path, effect_name):
-        """
-        Apply the specified image effect using the ApplyEffects class.
-
-        Parameters:
-        - image_path (str): Path to the original image.
-        - effect_name (str): Name of the image effect to apply.
-
-        Returns:
-        - str: Path to the processed image.
-        """
-        try:
-            # Load the original image
-            image = Image.open(os.path.join(self.BASE_DIR, image_path))
-
-            # Create an instance of ApplyEffects
-            applier = ApplyEffects(image)
-
-            # Apply the selected effect
-            processed_image_path = applier.apply_effect(effect_name)
-
-            return processed_image_path
-        except Exception as e:
-            print(f"Error processing image: {str(e)}")
-            return None
+class ImageProcessing(LoginRequiredMixin, TemplateView):
+    """Process image and return the route of the processesed image."""
 
     def get(self, request):
-        """
-        Handle GET requests for image processing.
-
-        Parameters:
-        - request (HttpRequest): Django HttpRequest object.
-
-        Returns:
-        - HttpResponse: Response containing the processed image URL or an error message.
-        """
+        """Process and temporarily save image."""
         user_id = request.user.id
-        effect_name = request.GET.get('effect', '').replace(u'\xa0', '')
+        effect_name = request.GET.get('effect')  # Adjust variable name to be more descriptive
+        
         image_path = request.GET.get('path')
+        decoded_path = urllib.parse.unquote(image_path)  # Decode the URL-encoded path
+        image = Image.open(os.path.join(BASE_DIR, decoded_path))
 
-        if not image_path:
-            return HttpResponseNotFound("Image not found")
+        # Apply the effect based on the dynamically selected effect name
+        apply_effects = ApplyEffects(image)
+        edited_image = apply_effects.apply_effect(effect_name)
 
-        file_name = os.path.basename(image_path)
+        file_name = os.path.basename(path)
         file, ext = os.path.splitext(file_name)
 
-        # Create a directory for storing the processed images
-        output = os.path.join(self.BASE_DIR, self.MEDIA_URL, 'CACHE/temp/', str(user_id))
-        os.makedirs(output, exist_ok=True)
+        # Add a random number to make the image unique
+        rand = random.randint(0, 100)
+
+        # Create an absolute path for folder creation
+        output = os.path.join(BASE_DIR, MEDIA_URL, 'CACHE/temp/', str(user_id))
+        if not os.path.exists(output):
+            os.makedirs(output)
 
         # Set the path to save the processed image
-        temp_file_location = "{}{}.PNG".format(file, effect_name)
-        temp_file_location = "thumbnails/{}.PNG".format(effect_name) if request.GET.get('preview') else temp_file_location
+        temp_file_location = "{}{}.PNG".format(rand, file)
+
+        # Set the route for exclusive thumbnails
+        if request.GET.get('preview'):
+            temp_file_location = "thumbnails/{}.PNG".format(edited_image)
+
         temp_file = os.path.join(output, temp_file_location)
+        if not os.path.isdir(os.path.dirname(temp_file)):
+            os.makedirs(os.path.dirname(temp_file))
 
-        # Apply the selected effect using the apply_effect method
-        processed_image_path = self.apply_effect(image_path, effect_name)
+        # Save the processed image
+        edited_image.save(temp_file, 'PNG')
 
-        if processed_image_path:
-            # Perform housekeeping
-            housekeeping(output)
-
-            # Save the processed image
-            processed_image = Image.open(processed_image_path)
-            processed_image.save(temp_file, 'PNG')
-
-            # Construct the file URL
-            file_url = os.path.join(self.MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
-
-            return HttpResponse(file_url)
-        else:
-            # Return an error response if processing fails
-            return HttpResponseNotFound("Error processing image.")
-            
-class DeleteImage(View, LoginRequiredMixin):
-    """
-    View to delete all existing photos for the logged-in user.
-    """
-
-    def get(self, request, *args, **kwargs):
-        try:
-            images = UploadImage.objects.filter(user=request.user)
-            for image in images:
-                # Trigger pre_delete signals to delete image files
-                image.delete()
-            return HttpResponse("success", content_type="text/plain")
-        except UploadImage.DoesNotExist:
-            raise Http404("No photos found for the user.")
+        file_url = os.path.join(MEDIA_URL, 'CACHE', 'temp', str(user_id), temp_file_location)
+        return HttpResponse(file_url)
 
 
-def custom_page_not_found(request, exception=None):
-    return page_not_found(request, exception, template_name='main/404.html')
+def apply_effect_view(request):
+    if request.method == 'POST':
+        form = UploadImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the uploaded image
+            uploaded_image = form.save()
 
-    
-def custom_server_error(request, *args, **kwargs):
-    return server_error(request)
+            # Get the path of the uploaded image
+            image_path = uploaded_image.image.path
+
+            # Get the selected effect from the form
+            effect = request.POST['effect']
+
+            try:
+                # Create an instance of ApplyEffects with the image path
+                apply_effects_instance = ApplyEffects(image_path)
+
+                # Apply the specified effect
+                edited_image_path = apply_effects_instance.apply_effect(effect)
+
+                # Get the relative path from the base directory
+                relative_path = os.path.relpath(edited_image_path, settings.BASE_DIR)
+
+                # Return the relative path in the HTTP response
+                return HttpResponse(relative_path, content_type="text/plain")
+
+            except FileNotFoundError as e:
+                return HttpResponse(f"Error: File not found at path: {image_path}", status=404)
+
+            except ValueError as e:
+                return HttpResponse(f"Error: {str(e)}", status=400)
+
+            except Exception as e:
+                return HttpResponse(f"Error: An unexpected error occurred: {str(e)}", status=500)
+
+    return HttpResponse("Method not allowed", status=405)

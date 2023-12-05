@@ -50,3 +50,6 @@ class ApplyEffects:
         except Exception as e:
             print(f"Error: An unexpected error occurred: {str(e)}")
             raise e
+
+
+

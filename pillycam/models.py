@@ -32,7 +32,7 @@ class UploadImage(models.Model):
         format='JPEG',
         options={'quality': 60}
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     edited = models.SmallIntegerField(default=0)
     created_on = models.DateTimeField(default=timezone.now)
     modified_on = models.DateTimeField(auto_now=True)

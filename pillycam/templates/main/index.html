@@ -2,127 +2,86 @@
 {% load static %}
 
 {% block content %}
-<div class="column">
-    {% include "main/navbar.html" %}
-</div>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
 
-<div class="dashboard-container">
-    <br/>
-    <br/>
+    <div class="column">
+        {% include "main/navbar.html" %}
+    </div>
 
-    <div class="container">
+    <div class="dashboard-container">
         <br/>
         <br/>
-        {% for photo in photos %}
-        <img src="{{ photo }}" alt="{{ photo }}">
-        {% endfor %}
 
-        <!-- Image Collection Section -->
-        <div class='image-collection' id="wrapper">
-            {% for image in images %}
-                {% if image.get_url %}
-                    <div class='thumbholder'>
-                        <img src="{{ image.thumbnail.url }}" alt="" data="{{ image.file.url }}" id="{{ image.id }}" class='thumbs'>
-                        <div class="img-caption">
-                            {% if image.edited %}
-                                <i class="fa fa-star-half-o retouch"></i>
-                            {% endif %}
-                            <a href="#myModal" data-toggle="modal">
-                                <i class="fa fa-trash pull-right delete" id="{{ image.id }}"></i>
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
-            {% endfor %} 
-            {% if images|length > 2 %}
-                <div class="arrow animated bounce">
-                    <i class="fa fa-arrow-down"></i>
+        <div class="container">
+            <br/>
+            <br/>
+            <h2>Your Photo Board</h2>
+            {% if images %}
+                <div class="photo-board">
+                    {% for image in images %}
+                        {% if image.get_url %}
+                            <div class="photo">
+                                <img src="{{ image.thumbnail.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
+                                <p>Uploaded on: {{ image.created_on }}</p>
+                                <p>{{ image.title }}</p>
+                                {% if image.edited %}
+                                    <i class="fa fa-star-half-o retouch"></i>
+                                {% endif %}
+                                <a href="#myModal" data-toggle="modal">
+                                    <i class="fa fa-trash pull-right delete" id="{{image.id}}"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
+            {% else %}
+                <p>No photos uploaded yet.</p>
             {% endif %}
         </div>
 
-        <!-- Photo Board Section -->
-        <h2>Your Photo Board</h2>
-        <div class="row">
-            {% for image in edited_images %}
-                <div class="col-md-3 mb-3">
-                    <img src="{{ image.image.url }}" class="img-thumbnail" data-toggle="modal" data-target="#previewModal{{ image.id }}">
-                    <button class="delete-button" id="delete-button">Delete</button> 
-                    <!-- <button class="delete-button" data-image-id="{{ image.id }}">Delete</button> -->
-                </div>
-            {% endfor %}
-        </div>
+    
+        <h1>Image Effects</h1> 
+    
+        <form id="applyEffectForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <label for="id_effect">Select Effect:</label>
+            <select name="effect" id="id_effect" class="form-control">
+                <option value="brightness">Brightness</option>
+                <option value="grayscale">Grayscale</option>
+                <option value="blackwhite">Black and White</option>
+                <!-- Add more options as needed -->
+            </select>
+            <br>
+            <button type="submit">Apply Effect</button>
+        </form>
+    
+        
+        <!-- Display the processed image -->
+        <img id="processedImage" src="#" alt="Processed Image">
+        
+        
+        <!-- Preview Button (Shows Modal) -->
+        <button type="button" id="previewButton" data-toggle="modal" data-target="#previewModal">Preview</button>
 
-        {% if images %}
-            <div class="photo-board">
-                {% for image in images %}
-                    <div class="photo">
-                        <p>Uploaded on: {{ image.created_on }}</p>
-                        <p>{{ image.title }}</p>
-                        <button class="delete-button" id="delete-button">Delete</button> 
-                        <!-- data-image-id="{{ image.id }}">Delete</button> -->
+        <!-- Upload Button -->
+        <button type="button" id="uploadButton" >Upload</button>
+
+        <!-- Preview Modal -->
+        <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <img src="" id="previewImage" class="img-fluid">
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>No photos uploaded yet.</p>
-        {% endif %}
-    </div>
-
-    <!-- Image Effects Section -->
-    <h1>Image Effects</h1>
-
-    <!-- Form for image upload -->
-    <form id="uploadForm" method="POST" enctype="multipart/form-data" class='form-upload'>
-        {% csrf_token %}
-        <input type="file" name="image" accept="image/*" id="imageInput" required>
-        <select name="effect">
-            {% for effect in effects %}
-                <option value="{{ effect }}">{{ effect|title }}</option>
-            {% endfor %}
-        </select>
-        <button type="button" id="applyEffect">Apply Effect</button>
-        <button type="submit" id="saveButton">Upload and Save</button>
-    </form>
-
-    <!-- Modal for Image Deletion -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h4 class="modal-title">Warning!</h4>
-                </div>
-                <div class="modal-body">
-                    <img class="del-image" src='' width=100% height=300px>
-                    <center> You are about to delete this picture, continue ?</center>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button id="submit" type="button" class="btn btn-primary" data-dismiss="modal">Delete</button>
                 </div>
             </div>
         </div>
+
+        <!-- Placeholder for delete button (adjust according to your structure) -->
+        <button class="delete-button" data-image-id="1">Delete</button>
+        <button class="share-button">Share</button>
+
+        <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
     </div>
-
-    <!-- Placeholder for additional buttons -->
-    <button class="delete-button" data-image-id="1">Delete</button>
-    <button class="share-button">Share</button>
-    <button type="button" class="btn btn-primary" id="openDisplayModal">Open Display Modal</button>
-</div>
-
-<!-- Facebook SDK Script -->
-<script>
-    (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s);
-        js.id = id;
-        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5&appId=1689075798037081";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-</script>
-
-<!-- Link to CSS file -->
-<link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
