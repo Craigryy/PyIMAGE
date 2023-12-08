@@ -81,3 +81,32 @@ $(document).ready(function () {
         });
     });
 });
+
+
+
+// jquery_script.js
+
+$(document).ready(function() {
+    $('#uploadForm').submit(function(e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            type: 'POST',
+            url: '/apply_effect/',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Display success message or handle response
+                $('#result').html(response);
+            },
+            error: function(error) {
+                console.log(error);
+                // Display error message or handle error
+                $('#result').html('Error processing image');
+            }
+        });
+    });
+});

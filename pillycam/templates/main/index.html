@@ -20,7 +20,7 @@
                     {% for image in images %}
                         <!-- {% if image.edited %} -->
                             <div class="photo" data-image-id="{{ image.id }}">
-                                <img src="{{ image.thumbnail.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
+                                <img src="{{ image.image.url }}" alt="Thumbnail" class="select-image" data-image-path="{{ image.image.url }}">
                                 <p>Uploaded on: {{ image.created_on }}</p>
                                 <p>{{ image.title }}</p>
                                 <i class="fa fa-star-half-o retouch"></i>
@@ -38,7 +38,7 @@
         
         <h1>Image Effects</h1> 
 
-        <form id="applyEffectForm" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
             <label for="id_effect">Select Effect:</label>
@@ -50,6 +50,8 @@
             </select>
             <br>
             <button type="submit" class='applyEffectForm'>Apply Effect</button>
+
+            <button type="submit">Upload and Process</button>
 
             <!-- Reset Button -->
             <button type="button" class="resetButton">Reset</button>
