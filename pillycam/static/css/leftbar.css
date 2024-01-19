@@ -1,0 +1,21 @@
+.avatar-profile {
+    background-color: #333; /* Dark background color */
+    color: white; /* Text color */
+    padding: 20px; /* Adjust padding as needed */
+    width: 200px; /* Set the width of the left bar */
+}
+
+.avatar-profile img {
+    width: 100px; /* Set the width of the avatar image */
+    height: 100px; /* Set the height of the avatar image */
+    display: block;
+    margin: 0 auto 10px; /* Center the image and add space below */
+}
+
+.avatar-profile .user-info {
+    text-align: center; /* Center the username */
+}
+
+.avatar-profile .user-info span {
+    display: block; /* Ensure the full name is on a new line */
+}

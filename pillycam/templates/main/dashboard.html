@@ -1,0 +1,52 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<style>
+    /* CSS for the image grid */
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* 5 columns */
+        gap: 10px; /* Adjust spacing between images */
+        background-color: #f4f4f4; /* Light background color */
+        padding: 40px; /* Add padding for spacing */
+        min-height: 300px; /* Set a minimum height for the grid */
+        text-align: center; /* Center text when no images are present */
+    }
+
+    .grid-item img {
+        width: 100%; /* Ensure images fill their grid item */
+        height: auto;
+        display: block;
+    }
+
+    /* Style for the message when no images are present */
+    .no-image-msg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%; /* Center the text vertically */
+        font-size: 20px;
+        color: #888; /* Color for the text message */
+    }
+</style>
+
+<div class="image-grid">
+    {% if edited_images %}
+        {% for image in edited_images %}
+            <div class="grid-item">
+                <img src="{{ image.image.url }}" alt="Edited Image">
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-image-msg">
+            No image uploaded or edited
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
